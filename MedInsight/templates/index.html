@@ -3,228 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MedInsight AI | 医药合规与文献解析引擎</title>
+    <title>MedInsight AI | 医药合规审计与文献解析系统</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        /* 针对 AI 生成报告的专属精美排版 */
-        .ai-report h3 { color: #1e40af; font-size: 1.25rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.75rem; border-bottom: 2px solid #bfdbfe; padding-bottom: 0.25rem; }
-        .ai-report p { margin-bottom: 1rem; line-height: 1.7; color: #374151; }
-        .ai-report ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; color: #374151; }
-        .ai-report li { margin-bottom: 0.5rem; }
-        .ai-report strong { color: #111827; font-weight: 600; background-color: #fef08a; padding: 0 4px; border-radius: 2px;}
+        /* 医药合规报告专属高级排版 */
+        .med-report h3 { color: #0284c7; font-size: 1.25rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.75rem; border-bottom: 2px solid #bae6fd; padding-bottom: 0.25rem; }
+        .med-report p { margin-bottom: 1rem; line-height: 1.7; color: #334155; text-align: justify; }
+        .med-report ul { list-style-type: square; padding-left: 1.5rem; margin-bottom: 1rem; color: #334155; }
+        .med-report li { margin-bottom: 0.5rem; }
+        .med-report strong { color: #ef4444; background-color: #fee2e2; padding: 0 4px; border-radius: 2px; font-weight: 600; }
+        
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     </style>
 </head>
-<body class="bg-slate-50 font-sans text-slate-800 selection:bg-blue-200">
+<body class="bg-slate-50 font-sans text-slate-800">
+
+    <div id="welcomeLoader" class="fixed inset-0 bg-slate-900 z-50 flex flex-col items-center justify-center p-6 text-center transition-all duration-500">
+        <div class="bg-slate-800 p-8 rounded-2xl shadow-2xl max-w-md border border-slate-700 animate-pulse">
+            <i class="fa-solid fa-prescription-bottle-medical text-sky-400 text-5xl mb-4"></i>
+            <h3 class="text-xl font-bold text-white mb-2">MedInsight 临床大脑点火中</h3>
+            <p class="text-slate-400 text-sm leading-relaxed mb-4">
+                由于采用云端免费托管，服务器初次加载需激活唤醒约 <span class="text-sky-400 font-bold">20-30 秒</span>。后续运行将恢复极速响应，感谢您的耐心等待！
+            </p>
+            <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                <div class="bg-gradient-to-r from-sky-400 to-blue-600 h-full w-full rounded-full transition-all duration-[20s]" style="width: 0%;" id="loadBar"></div>
+            </div>
+            <p class="text-xs text-slate-500 mt-4">本医学 SaaS 系统全栈由求职者独立研发与部署</p>
+        </div>
+    </div>
 
     <header class="bg-white shadow-sm sticky top-0 z-10">
         <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
             <div class="flex items-center space-x-2">
-                <i class="fa-solid fa-heart-pulse text-blue-600 text-2xl"></i>
-                <h1 class="text-xl font-bold text-slate-800">MedInsight <span class="text-blue-600">AI</span></h1>
+                <i class="fa-solid fa-heart-pulse text-sky-600 text-2xl"></i>
+                <h1 class="text-xl font-bold text-slate-800">MedInsight <span class="text-sky-600">AI</span></h1>
             </div>
-            <div class="text-sm text-slate-500 font-medium">企业级医药合规审计系统</div>
+            <div class="text-sm text-slate-500 font-medium">企业级医药合规审计与文献解析 SaaS</div>
         </div>
     </header>
 
     <main class="max-w-5xl mx-auto px-4 py-8">
-        
-        <section class="mb-12 text-center">
-            <h2 class="text-3xl font-extrabold text-slate-900 mb-4">精准解析，守住合规红线</h2>
-            <p class="text-slate-600 max-w-2xl mx-auto mb-8">基于 DeepSeek 大模型驱动，专为外企医学部与合规部打造。秒级提取核心临床数据，深度扫描物料违规风险。</p>
+        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 mb-8">
+            <h2 class="text-lg font-bold mb-4 flex items-center"><i class="fa-solid fa-file-medical text-sky-500 mr-2"></i> 上传医学文献或宣传物料</h2>
+            <p class="text-sm text-slate-500 mb-6">支持 PDF 或 Word 格式。系统将流式解析文本，自动提取临床核心数据，并扫描广告法违规红线。</p>
             
-            <div class="grid md:grid-cols-3 gap-6 text-left">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition">
-                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-xl mb-4"><i class="fa-solid fa-chart-line"></i></div>
-                    <h3 class="font-bold text-lg mb-2">临床数据提取</h3>
-                    <p class="text-slate-500 text-sm">精准抓取 OS、PFS、HR 值及 P 值等核心有效性终点数据。</p>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition">
-                    <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center text-xl mb-4"><i class="fa-solid fa-prescription-bottle-medical"></i></div>
-                    <h3 class="font-bold text-lg mb-2">规范用药建议</h3>
-                    <p class="text-slate-500 text-sm">提炼推荐剂量与周期，自动标红特殊人群用药的监测红线。</p>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition">
-                    <div class="w-12 h-12 bg-red-100 text-red-600 rounded-lg flex items-center justify-center text-xl mb-4"><i class="fa-solid fa-shield-halved"></i></div>
-                    <h3 class="font-bold text-lg mb-2">广告法红线扫描</h3>
-                    <p class="text-slate-500 text-sm">严厉审查“绝对安全”、“保证治愈”等夸大疗效及违规绝对化用语。</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-            <div class="p-8">
-                <div class="flex items-center space-x-2 mb-6">
-                    <i class="fa-solid fa-rocket text-blue-600"></i>
-                    <h2 class="text-xl font-bold">开始使用指南</h2>
-                </div>
-                
-                <div class="flex flex-col md:flex-row justify-between mb-8 text-sm text-slate-600">
-                    <div class="flex items-center space-x-2"><span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">1</span><span>选择输入模式（纯文本或文档）</span></div>
-                    <i class="fa-solid fa-chevron-right hidden md:block text-slate-300"></i>
-                    <div class="flex items-center space-x-2"><span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">2</span><span>上传您的医疗宣传物料或文献</span></div>
-                    <i class="fa-solid fa-chevron-right hidden md:block text-slate-300"></i>
-                    <div class="flex items-center space-x-2"><span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">3</span><span>点击解析，等待 AI 结构化报告</span></div>
-                </div>
-
-                <div class="flex space-x-1 bg-slate-100 p-1 rounded-lg mb-6 w-full md:w-64">
-                    <button id="btnTextMode" onclick="switchMode('text')" class="flex-1 py-2 text-sm font-medium rounded-md bg-white text-blue-600 shadow-sm transition">文本输入</button>
-                    <button id="btnFileMode" onclick="switchMode('file')" class="flex-1 py-2 text-sm font-medium rounded-md text-slate-500 hover:text-slate-700 transition">文件上传</button>
-                </div>
-
-                <form id="analyzeForm" onsubmit="submitForm(event)">
-                    <div id="textInputArea" class="block">
-                        <textarea id="textContent" rows="6" placeholder="请在此粘贴需要审计的医学文案、指南片段或药品说明书..." class="w-full p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition resize-y"></textarea>
-                    </div>
-
-                    <div id="fileInputArea" class="hidden">
-                        <div class="flex items-center justify-center w-full">
-                            <label for="fileContent" class="flex flex-col items-center justify-center w-full h-40 border-2 border-slate-300 border-dashed rounded-xl cursor-pointer bg-slate-50 hover:bg-slate-100 transition">
-                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-400 mb-3"></i>
-                                    <p class="mb-2 text-sm text-slate-500"><span class="font-semibold">点击上传</span> 或拖拽文件至此处</p>
-                                    <p class="text-xs text-slate-400">支持 PDF, DOCX, TXT 格式</p>
-                                </div>
-                                <input id="fileContent" type="file" class="hidden" accept=".pdf,.doc,.docx,.txt" onchange="updateFileName()" />
-                            </label>
+            <form id="auditForm" onsubmit="submitForm(event)" class="space-y-6">
+                <div class="flex items-center justify-center w-full">
+                    <label for="medicalFile" class="flex flex-col items-center justify-center w-full h-40 border-2 border-slate-300 border-dashed rounded-xl cursor-pointer bg-slate-50 hover:bg-slate-100 transition">
+                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                            <i class="fa-solid fa-cloud-arrow-up text-4xl text-slate-400 mb-3"></i>
+                            <p class="mb-2 text-sm text-slate-500"><span class="font-semibold">点击上传文献 / 物料文档</span></p>
+                            <p class="text-xs text-slate-400">支持 .pdf, .docx, .doc 格式</p>
                         </div>
-                        <p id="fileNameDisplay" class="text-center text-sm text-blue-600 font-medium mt-3 hidden"></p>
-                    </div>
-
-                    <div class="mt-8 text-center">
-                        <button type="submit" id="submitBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg shadow-blue-200 transition-all transform hover:-translate-y-0.5 flex items-center justify-center mx-auto space-x-2 min-w-[200px]">
-                            <i id="btnIcon" class="fa-solid fa-wand-magic-sparkles"></i>
-                            <span id="btnText">开始智能合规解析</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </section>
-
-        <section id="resultSection" class="mt-8 hidden">
-            <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-                <div class="bg-blue-50 px-6 py-4 border-b border-blue-100 flex items-center space-x-2">
-                    <i class="fa-solid fa-file-medical text-blue-600"></i>
-                    <h3 class="font-bold text-slate-800">AI 结构化审计报告</h3>
+                        <input id="medicalFile" type="file" class="hidden" accept=".pdf,.doc,.docx" onchange="updateFileName()" required />
+                    </label>
                 </div>
-                <div id="resultContent" class="p-6 ai-report text-slate-700">
+                <p id="fileNameDisplay" class="text-center text-sm text-sky-600 font-medium hidden"></p>
+
+                <div class="text-center">
+                    <button type="submit" id="submitBtn" class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 px-12 rounded-full shadow-lg shadow-sky-100 transition-all transform hover:-translate-y-0.5 inline-flex items-center space-x-2">
+                        <i id="btnIcon" class="fa-solid fa-microscope"></i>
+                        <span id="btnText">开始自动化合规审计</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <section id="resultSection" class="hidden">
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+                <div class="bg-slate-900 px-6 py-4 flex justify-between items-center">
+                    <div class="flex items-center space-x-2 text-white font-bold">
+                        <i class="fa-solid fa-clipboard-check text-emerald-400"></i>
+                        <span>MedInsight 自动化审计报告结果</span>
                     </div>
+                    <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded font-mono">STATUS: COMPLETED</span>
+                </div>
+                <div class="p-8 bg-white">
+                    <div id="resultContent" class="med-report"></div>
+                </div>
             </div>
         </section>
-
     </main>
 
-    <footer class="text-center text-slate-400 text-sm py-8 mt-4">
-        &copy; 2026 MedInsight AI. 您的个人专属全栈 SaaS 级作品.
-    </footer>
-
     <script>
-        let currentMode = 'text';
+        // 🪄 点火倒计时进度条与自动关闭
+        window.addEventListener('DOMContentLoaded', () => {
+            const bar = document.getElementById('loadBar');
+            setTimeout(() => { bar.style.width = '100%'; }, 100);
+            
+            setTimeout(() => {
+                const loader = document.getElementById('welcomeLoader');
+                loader.classList.add('opacity-0', 'pointer-events-none');
+            }, 3000);
+        });
 
-        // 切换输入模式
-        function switchMode(mode) {
-            currentMode = mode;
-            const textBtn = document.getElementById('btnTextMode');
-            const fileBtn = document.getElementById('btnFileMode');
-            const textArea = document.getElementById('textInputArea');
-            const fileArea = document.getElementById('fileInputArea');
-
-            if (mode === 'text') {
-                textBtn.className = 'flex-1 py-2 text-sm font-medium rounded-md bg-white text-blue-600 shadow-sm transition';
-                fileBtn.className = 'flex-1 py-2 text-sm font-medium rounded-md text-slate-500 hover:text-slate-700 transition';
-                textArea.classList.remove('hidden');
-                fileArea.classList.add('hidden');
-            } else {
-                fileBtn.className = 'flex-1 py-2 text-sm font-medium rounded-md bg-white text-blue-600 shadow-sm transition';
-                textBtn.className = 'flex-1 py-2 text-sm font-medium rounded-md text-slate-500 hover:text-slate-700 transition';
-                fileArea.classList.remove('hidden');
-                textArea.classList.add('hidden');
-            }
-        }
-
-        // 显示上传的文件名
         function updateFileName() {
-            const fileInput = document.getElementById('fileContent');
+            const fileInput = document.getElementById('medicalFile');
             const display = document.getElementById('fileNameDisplay');
             if (fileInput.files.length > 0) {
-                display.innerText = '已选择文件: ' + fileInput.files[0].name;
+                display.innerText = '已成功加载文档: ' + fileInput.files[0].name;
                 display.classList.remove('hidden');
             }
         }
 
-        // 提交表单与 API 交互
         async function submitForm(event) {
-            event.preventDefault(); // 阻止网页默认刷新
-            
+            event.preventDefault();
             const btn = document.getElementById('submitBtn');
             const btnText = document.getElementById('btnText');
             const btnIcon = document.getElementById('btnIcon');
             const resultSection = document.getElementById('resultSection');
             const resultContent = document.getElementById('resultContent');
 
-            // 按钮变成加载状态
             btn.disabled = true;
-            btn.classList.replace('bg-blue-600', 'bg-slate-400');
-            btn.classList.replace('hover:bg-blue-700', 'hover:bg-slate-400');
+            btn.classList.replace('bg-sky-600', 'bg-slate-400');
             btnIcon.className = 'fa-solid fa-spinner fa-spin';
-            btnText.innerText = '深度解析中，请稍候...';
+            btnText.innerText = '医学大脑正在流式检索大模型、扫描法条红线...';
             resultSection.classList.add('hidden');
 
             const formData = new FormData();
-            formData.append('mode', currentMode);
-
-            if (currentMode === 'text') {
-                const text = document.getElementById('textContent').value;
-                if (!text.trim()) {
-                    alert('请输入要解析的文本！');
-                    resetBtn();
-                    return;
-                }
-                formData.append('text', text);
-            } else {
-                const fileInput = document.getElementById('fileContent');
-                if (fileInput.files.length === 0) {
-                    alert('请先选择一个文件！');
-                    resetBtn();
-                    return;
-                }
-                formData.append('file', fileInput.files[0]);
-            }
+            formData.append('file', document.getElementById('medicalFile').files[0]);
 
             try {
-                // 呼叫咱们的 Python 后厨
-                const response = await fetch('/api/analyze', {
-                    method: 'POST',
-                    body: formData
-                });
-                
+                // 注意：这里对接的是你 MedInsight 本身的接口路由
+                const response = await fetch('/api/audit', { method: 'POST', body: formData });
                 const data = await response.json();
                 
                 if (response.ok) {
-                    // 🎉 魔法时刻：用 marked.js 把原始字符变成精美排版！
                     resultContent.innerHTML = marked.parse(data.result);
                     resultSection.classList.remove('hidden');
-                    // 平滑滚动到结果区
                     resultSection.scrollIntoView({ behavior: 'smooth' });
                 } else {
-                    resultContent.innerHTML = `<p class="text-red-500"><i class="fa-solid fa-triangle-exclamation"></i> 错误: ${data.error}</p>`;
-                    resultSection.classList.remove('hidden');
+                    alert('审计中断: ' + data.error);
                 }
             } catch (error) {
-                resultContent.innerHTML = `<p class="text-red-500"><i class="fa-solid fa-wifi"></i> 网络或服务器异常，请重试。<br>${error}</p>`;
-                resultSection.classList.remove('hidden');
+                alert('网络异常: ' + error);
             }
 
-            resetBtn();
-
-            function resetBtn() {
-                btn.disabled = false;
-                btn.classList.replace('bg-slate-400', 'bg-blue-600');
-                btn.classList.replace('hover:bg-slate-400', 'hover:bg-blue-700');
-                btnIcon.className = 'fa-solid fa-wand-magic-sparkles';
-                btnText.innerText = '开始智能合规解析';
-            }
+            btn.disabled = false;
+            btn.classList.replace('bg-slate-400', 'bg-sky-600');
+            btnIcon.className = 'fa-solid fa-microscope';
+            btnText.innerText = '开始自动化合规审计';
         }
     </script>
 </body>
