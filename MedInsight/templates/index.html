@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedInsight AI - 医学文献与指南智能解读引擎 (全栈运行版)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 图标库 CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            50: '#f0f5fa',
+                            100: '#dce6f1',
+                            700: '#234876',
+                            800: '#1B365D', // 经典深海军蓝
+                            900: '#0D1B2A',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col antialiased">
+
+    <!-- 顶部全能导航栏 -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 px-6 py-3 flex items-center justify-between shadow-sm">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 bg-navy-800 rounded-lg flex items-center justify-center text-white shadow-md shadow-navy-800/20">
+                <i class="fa-solid fa-server text-lg"></i>
+            </div>
+            <div>
+                <span class="text-xl font-bold text-navy-800 tracking-tight">MedInsight</span>
+                <span class="text-xl font-light text-slate-500">AI</span>
+                <span class="ml-2 px-2 py-0.5 bg-blue-50 text-blue-800 text-xs font-semibold rounded-full border border-blue-100">● Python全栈联调版</span>
+            </div>
+        </div>
+        <div class="flex items-center space-x-6 text-sm text-slate-600">
+            <span id="server-status" class="text-xs px-2 py-1 rounded bg-amber-100 text-amber-800 font-mono">⚠️ 正在连接 Python 后端...</span>
+            <a href="#" class="hover:text-navy-800 transition"><i class="fa-solid fa-book-open mr-1"></i> 药企合规标准库</a>
+        </div>
+    </header>
+
+    <!-- 主体双栏内容区 -->
+    <main class="flex-grow max-w-[1600px] w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-65px)] overflow-hidden">
+        
+        <!-- 左侧输入面板 -->
+        <section class="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col shadow-sm">
+            <!-- 面板标题 -->
+            <div class="mb-5">
+                <h1 class="text-2xl font-bold text-navy-800 tracking-tight flex items-center">
+                    <i class="fa-solid fa-file-medical text-navy-700 mr-2.5"></i>原始学术资料输入
+                </h1>
+                <p class="text-sm text-slate-500 mt-1">现在已支持完美读取本地电脑上的 PDF、Word 实体文件！后台 Python 会自动提炼纯文本。</p>
+            </div>
+
+            <!-- 功能选项卡切换 (Tabs) -->
+            <div class="flex bg-slate-100 p-1 rounded-xl mb-4 border border-slate-200/50">
+                <button id="tab-text-btn" onclick="switchTab('text')" class="flex-1 py-2.5 text-sm font-medium rounded-lg transition-all flex items-center justify-center space-x-2 bg-white text-navy-800 shadow-sm">
+                    <i class="fa-solid fa-align-left"></i>
+                    <span>粘贴文献文本</span>
+                </button>
+                <button id="tab-file-btn" onclick="switchTab('file')" class="flex-1 py-2.5 text-sm font-medium rounded-lg transition-all flex items-center justify-center space-x-2 text-slate-600 hover:text-slate-900">
+                    <i class="fa-solid fa-file-pdf"></i>
+                    <span>真实上传 PDF / Word 文档</span>
+                </button>
+            </div>
+
+            <!-- 动态输入容器 -->
+            <div class="flex-grow relative min-h-[300px] flex flex-col">
+                <!-- 文本输入框状态 -->
+                <div id="input-text-container" class="w-full h-full flex flex-col">
+                    <textarea id="文献输入框" class="w-full flex-grow p-4 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-navy-800 focus:border-transparent resize-none text-slate-700 text-sm leading-relaxed custom-scrollbar placeholder-slate-400" placeholder="请在此处粘贴英文文献段落..."></textarea>
+                    <div class="absolute bottom-3 right-3 flex space-x-2">
+                        <button onclick="loadSample()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-md text-xs font-medium border border-slate-200 transition">
+                            <i class="fa-solid fa-wand-magic-sparkles mr-1 text-navy-700"></i> 载入药企医学部真实案例
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 文件上传状态 -->
+                <div id="input-file-container" class="hidden w-full h-full flex flex-col">
+                    <label class="w-full flex-grow border-2 border-dashed border-slate-300 hover:border-navy-700 rounded-xl bg-slate-50/50 flex flex-col items-center justify-center p-8 transition cursor-pointer group relative">
+                        <input type="file" id="file-input" class="hidden" accept=".pdf,.docx,.doc,.txt" onchange="handleFileSelect(this)">
+                        <div class="w-16 h-16 bg-white border border-slate-200 rounded-2xl flex items-center justify-center text-slate-400 group-hover:text-navy-800 group-hover:shadow-md transition mb-4">
+                            <i class="fa-solid fa-cloud-arrow-up text-2xl"></i>
+                        </div>
+                        <p id="upload-status-text" class="text-sm font-semibold text-slate-700">点击选择电脑上的 PDF / Word 文档</p>
+                        <p class="text-xs text-slate-400 mt-1">支持 .pdf, .docx 格式，文件将被发送至本地 Python 后端进行流解析</p>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 触发按钮 -->
+            <div class="mt-5">
+                <button onclick="runAnalysis()" id="submit-btn" class="w-full py-4 bg-navy-800 hover:bg-navy-900 text-white font-semibold rounded-xl shadow-lg shadow-navy-900/10 hover:shadow-navy-900/20 transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center space-x-2 text-base">
+                    <span>🚀 发送至 Python 后端进行深度解析</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- 右侧输出面板 -->
+        <section class="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col shadow-sm overflow-hidden">
+            <!-- 状态 1：空状态 -->
+            <div id="output-empty" class="w-full h-full flex flex-col items-center justify-center text-center p-8">
+                <div class="w-20 h-20 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center text-slate-300 mb-5 shadow-inner">
+                    <i class="fa-solid fa-server text-3xl text-navy-800 animate-pulse"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-700">全栈分布式医学报告区</h3>
+                <p class="text-sm text-slate-400 max-w-sm mt-1.5">当前已打通「前端浏览器 -> Python本地后台 -> DeepSeek大模型云端」全链路。真正支持实体文件解析！</p>
+            </div>
+
+            <!-- 状态 2：Loading 状态 -->
+            <div id="output-loading" class="hidden w-full h-full flex flex-col items-center justify-center p-8">
+                <div class="relative flex items-center justify-center mb-6">
+                    <div class="animate-spin rounded-full h-16 w-16 border-4 border-slate-200 border-t-navy-800"></div>
+                    <i class="fa-solid fa-microchip text-navy-800 absolute text-xl"></i>
+                </div>
+                <h3 class="text-base font-bold text-navy-800 animate-pulse">Python 后端正高频提取文档语义数据...</h3>
+                <div class="mt-3 flex flex-col space-y-1 text-xs text-slate-400 font-mono text-center">
+                    <div class="text-navy-700 animate-pulse">[SERVER PROCESS] 正在使用 PyMuPDF/docx 库强力提取文本...</div>
+                </div>
+            </div>
+
+            <!-- 状态 3：结果展示 -->
+            <div id="output-result" class="hidden w-full h-full flex flex-col text-slate-800">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+                    <div class="flex items-center space-x-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-100">
+                            ● Python全栈联调解析成功
+                        </span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="window.print()" class="px-3 py-1.5 bg-navy-800 hover:bg-navy-900 text-white rounded-lg text-xs font-medium shadow-sm transition flex items-center">
+                            <i class="fa-solid fa-print mr-1"></i> 打印报告 / 导出 PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex-grow overflow-y-auto pr-1 custom-scrollbar space-y-5 text-sm leading-relaxed pb-6">
+                    <div class="bg-white border-l-4 border-navy-800 border rounded-xl p-5 shadow-sm">
+                        <div class="flex items-center space-x-2 mb-3 text-navy-800 font-bold text-base">
+                            <i class="fa-solid fa-wand-magic-sparkles text-navy-700"></i>
+                            <h4>MedInsight 真实全栈诊断分析</h4>
+                        </div>
+                        <div id="real-ai-output-box" class="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap font-sans selection:bg-navy-100"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let currentMode = 'text';
+        let selectedFile = null;
+
+        function switchTab(type) {
+            currentMode = type;
+            const textBtn = document.getElementById('tab-text-btn');
+            const fileBtn = document.getElementById('tab-file-btn');
+            const textContainer = document.getElementById('input-text-container');
+            const fileContainer = document.getElementById('input-file-container');
+
+            if (type === 'text') {
+                textBtn.className = "flex-1 py-2.5 text-sm font-medium rounded-lg transition-all flex items-center justify-center space-x-2 bg-white text-navy-800 shadow-sm";
+                fileBtn.className = "flex-1 py-2.5 text-sm font-medium rounded-lg transition-all flex items-center justify-center space-x-2 text-slate-600 hover:text-slate-900";
+                textContainer.classList.remove('hidden');
+                fileContainer.classList.add('hidden');
+            } else {
+                fileBtn.className = "flex-1 py-2.5 text-sm font-medium rounded-lg transition-all flex items-center justify-center space-x-2 bg-white text-navy-800 shadow-sm";
+                textBtn.className = "flex-1 py-2.5 text-sm font-medium rounded-lg transition-all flex items-center justify-center space-x-2 text-slate-600 hover:text-slate-900";
+                fileContainer.classList.remove('hidden');
+                textContainer.classList.add('hidden');
+            }
+        }
+
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                selectedFile = input.files[0];
+                document.getElementById('upload-status-text').innerHTML = `✅ 已选择文件: <span class="text-navy-800 font-mono font-bold">${selectedFile.name}</span>`;
+            }
+        }
+
+        function loadSample() {
+            document.getElementById('文献输入框').value = `[Source Material: Phase III Clinical Trial Key Note] \nThe overall survival (OS) in the combination arm of Anti-PD-1 therapy plus chemotherapy demonstrated a significant improvement compared to the chemotherapy alone cohort. Median OS was 22.0 months vs 10.7 months (Hazard Ratio [HR] = 0.56; 95% CI, 0.45-0.70; P < 0.001). \n\n[Draft Material]: \nThis drug is 100% safe and cures all cancer patients instantly with zero side effects.`;
+        }
+
+        // 探测 Python 后端是否健康启动
+        async function checkServer() {
+            try {
+                const res = await fetch('/api/analyze', { method: 'OPTIONS' });
+                document.getElementById('server-status').className = "text-xs px-2 py-1 rounded bg-emerald-100 text-emerald-800 font-mono";
+                document.getElementById('server-status').innerText = "● Python 后端连接成功";
+            } catch {
+                document.getElementById('server-status').className = "text-xs px-2 py-1 rounded bg-rose-100 text-rose-800 font-mono animate-pulse";
+                document.getElementById('server-status').innerText = "🛑 警告: 未检测到 Python 后端，请先在 PyCharm 中运行 app.py";
+            }
+        }
+        setInterval(checkServer, 3000);
+
+        // 核心提交逻辑：将数据打包发送给 Python 后端
+        async function runAnalysis() {
+            const emptyState = document.getElementById('output-empty');
+            const loadingState = document.getElementById('output-loading');
+            const resultState = document.getElementById('output-result');
+            const outputBox = document.getElementById('real-ai-output-box');
+
+            const formData = new FormData();
+            formData.append('mode', currentMode);
+
+            if (currentMode === 'text') {
+                const text = document.getElementById('文献输入框').value;
+                if (!text.trim()) { alert("请先输入文本内容！"); return; }
+                formData.append('text', text);
+            } else {
+                if (!selectedFile) { alert("请先选择一个 PDF 或 Word 文件！"); return; }
+                formData.append('file', selectedFile);
+            }
+
+            emptyState.classList.add('hidden');
+            resultState.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+
+            try {
+                // 请求你本地用 PyCharm 跑起来的 Python Flask 服务器
+                const response = await fetch('http://127.0.0.1:5000/api/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (data.error) {
+                    alert("错误: " + data.error);
+                    loadingState.classList.add('hidden');
+                    emptyState.classList.remove('hidden');
+                } else {
+                    outputBox.innerHTML = data.result;
+                    loadingState.classList.add('hidden');
+                    resultState.classList.remove('hidden');
+                }
+            } catch (err) {
+                alert("🚨 无法连接到本地 Python 后端！\n\n请确认：\n1. 你已经在 PyCharm 里成功运行了 app.py\n2. 控制台显示 Running on http://127.0.0.1:5000");
+                loadingState.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
